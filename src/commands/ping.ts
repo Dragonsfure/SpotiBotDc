@@ -1,15 +1,34 @@
-import { CommandInteraction, SlashCommandBuilder, EmbedBuilder   } from "discord.js";
+import {
+  CommandInteraction,
+  SlashCommandBuilder,
+  EmbedBuilder,
+} from "discord.js";
+import { myClient } from "../models/myclient";
+import CommandHelper from "../interfaces/commandEmbed";
+
+const comInfo: CommandHelper = {
+  Name: "ping", 
+  Description: "Replies with Pong!",
+  ReplyEmbed: new EmbedBuilder()
+  .setTitle("Pong")
+  .setDescription("Pinging..."),  
+} 
 
 export const data = new SlashCommandBuilder()
-  .setName("ping")
-  .setDescription("Replies with Pong!");
+  .setName(comInfo.Name)
+  .setDescription(comInfo.Description);
+
 
 export async function execute(interaction: CommandInteraction) {
-    const embed = new EmbedBuilder ();
-    embed
-    .setTitle('WELCOME')
-    .setAuthor({name: "Test"})
-    .setDescription('HELLO BOIIII')
-    interaction.reply({embeds: [embed]})
- };
-//   return interaction.reply("Pong!");
+  const embed = comInfo.ReplyEmbed
+  .setFooter({
+    text: `Bot pinged by ${interaction.user.displayName}`,
+    iconURL: interaction.user.avatarURL()?.toString(),
+  });
+
+  const sent = await interaction.reply({embeds: [embed] });
+
+  embed.setDescription(`Roundtrip latency:  ${myClient.ws.ping}`)
+ 
+  interaction.editReply({embeds: [embed] });
+}

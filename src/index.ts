@@ -2,20 +2,17 @@ import { Client } from "discord.js";
 import { config } from "./config";
 import { commands } from "./commands";
 import { deployCommands } from "./deploy-commands";
+import { myClient } from "./models/myclient";
 
-const client = new Client({
-  intents: ["Guilds", "GuildMessages", "DirectMessages"],
-});
-
-client.once("ready", () => {
+myClient.once("ready", () => {
   console.log("Discord bot is ready! 🤖");
 });
 
-client.on("guildCreate", async (guild) => {
+myClient.on("guildCreate", async (guild) => {
   await deployCommands({ guildId: guild.id });
 });
 
-client.on("interactionCreate", async (interaction) => {
+myClient.on("interactionCreate", async (interaction) => {
   if (!interaction.isCommand()) {
     return;
   }
@@ -25,4 +22,4 @@ client.on("interactionCreate", async (interaction) => {
   }
 });
 
-client.login(config.DISCORD_TOKEN);
+myClient.login(config.DISCORD_TOKEN);
