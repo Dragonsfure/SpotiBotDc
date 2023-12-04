@@ -4,15 +4,14 @@ import {
     EmbedBuilder,
 } from 'discord.js';
 
-import myBotClient from '../models/myclient';
-import CommandHelper from '../interfaces/commandEmbed';
+import { CommandHelper } from "../interfaces/commandEmbed";
 
 const comInfo: CommandHelper = {
-    Name: 'COMMANDNAME',
-    Description: 'DECRIPTION',
+    Name: 'test',
+    Description: 'Replies with a Test',
     ReplyEmbed: new EmbedBuilder()
-        .setTitle('COMMAND REPLY')
-        .setDescription('CONTENT'),
+        .setTitle("The Test")
+        .setDescription('The Test reply'),
 }
 
 export const data = new SlashCommandBuilder()
