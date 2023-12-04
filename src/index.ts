@@ -1,10 +1,11 @@
 import { config } from "./config";
 import { commands } from "./commands";
-import { deployCommands } from "./deploy-commands";
+import { deployCommands, reloadCommands } from "./deploy-commands";
 import { myClient } from "./models/myclient";
 
-myClient.once("ready", () => {
+myClient.once("ready", async (guild)  => {
   console.log("Discord bot is ready! 🤖");
+  await reloadCommands();
 });
 
 myClient.on("guildCreate", async (guild) => {
