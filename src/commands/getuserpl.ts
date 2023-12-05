@@ -41,8 +41,6 @@ export async function execute(interaction: CommandInteraction) {
 
     const totalNumb = playlists.total;
 
-    console.log(`Total numb of playlists is ${totalNumb}`);
-
     const defaultLimit = 20;
     let numbOfRequests = 0;
 
@@ -52,8 +50,6 @@ export async function execute(interaction: CommandInteraction) {
       } else {
         numbOfRequests += 1;
       }
-      console.log("I'm going to sleep for 0.5 second.");
-      await sleep(500);
       playlists = await myapi.playlists.getUsersPlaylists(
         test,
         defaultLimit,
@@ -63,16 +59,6 @@ export async function execute(interaction: CommandInteraction) {
         endItems.items.push(element);
       });
     }
-    console.log(info);
-    console.log(test);
-
-    console.table(
-      endItems.items.map((item) => ({
-        name: item.name,
-        OwnerName: item.owner.display_name,
-        Url: item.external_urls.spotify,
-      }))
-    );
 
     endItems.items.forEach((element) => {
       reply += `${element.name}\r\n`;
