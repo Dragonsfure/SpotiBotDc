@@ -28,7 +28,11 @@ export const data = new SlashCommandBuilder()
 export async function execute(interaction: CommandInteraction) {
   const info = interaction.options as CommandInteractionOptionResolver;
   const test = info.getString("infolink");
-  let  reply: string = "";
+  let reply: string = "This is the list of public Playlists:\r\n";
+  const sleep = (ms: number) =>
+    new Promise((resolve) => setTimeout(resolve, ms));
+
+  await interaction.reply(reply);
 
   if (test !== null) {
     let endItems = {} as Page<Playlist>;
@@ -36,20 +40,31 @@ export async function execute(interaction: CommandInteraction) {
     endItems = playlists;
 
     const totalNumb = playlists.total;
-    const defaultLimit = 20;
-    const numbOfRequests = Math.trunc(totalNumb / defaultLimit);
 
-    await myapi.playlists.getUsersPlaylists(
-      test,
-      defaultLimit,
-      numbOfRequests * defaultLimit
-    );
+    console.log(`Total numb of playlists is ${totalNumb}`);
+
+    const defaultLimit = 20;
+    let numbOfRequests = 0;
+
+    while (true) {
+      if (endItems.items.length >= totalNumb) {
+        break;
+      } else {
+        numbOfRequests += 1;
+      }
+      console.log("I'm going to sleep for 0.5 second.");
+      await sleep(500);
+      playlists = await myapi.playlists.getUsersPlaylists(
+        test,
+        defaultLimit,
+        numbOfRequests * defaultLimit
+      );
+      playlists.items.forEach((element) => {
+        endItems.items.push(element);
+      });
+    }
     console.log(info);
     console.log(test);
-
-    playlists.items.forEach((element) => {
-      endItems.items.push(element);
-    });
 
     console.table(
       endItems.items.map((item) => ({
@@ -58,6 +73,7 @@ export async function execute(interaction: CommandInteraction) {
         Url: item.external_urls.spotify,
       }))
     );
+
     endItems.items.forEach((element) => {
       reply += `${element.name}\r\n`;
     });
@@ -67,5 +83,5 @@ export async function execute(interaction: CommandInteraction) {
   //   text: `Bot pinged by ${interaction.user.displayName}`,
   //   iconURL: interaction.user.avatarURL()?.toString(),
   // });
-  await interaction.reply(reply);
+  await interaction.editReply(reply);
 }
