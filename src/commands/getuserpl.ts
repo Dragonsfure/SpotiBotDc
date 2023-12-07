@@ -3,12 +3,14 @@ import {
   SlashCommandBuilder,
   EmbedBuilder,
   CommandInteractionOptionResolver,
+  APIEmbedField,
 } from "discord.js";
 
 import { CommandHelper } from "../interfaces/commandEmbed";
 import { Page, Playlist } from "@spotify/web-api-ts-sdk";
 import { myapi } from "../models/myspotapi";
 
+//Helper to initiate Helping Variables (used in my template)
 const comInfo: CommandHelper = {
   Name: "getuserpl",
   Description: "Replies with the public Playlists of an Spotify User",
@@ -28,12 +30,19 @@ export const data = new SlashCommandBuilder()
 export async function execute(interaction: CommandInteraction) {
   const info = interaction.options as CommandInteractionOptionResolver;
   const test = info.getString("infolink");
-  let reply: string = "This is the list of public Playlists:\r\n";
-  const sleep = (ms: number) =>
-    new Promise((resolve) => setTimeout(resolve, ms));
 
-  await interaction.reply(reply);
+  comInfo.ReplyEmbed.setFooter({
+    text: `Bot pinged by ${interaction.user.displayName}`,
+    iconURL: interaction.user.avatarURL()?.toString(),
+  });
 
+  await interaction.reply({
+    content: "Fetching Playlists... Pls wait",
+    embeds: [comInfo.ReplyEmbed],
+  });
+
+  //Checks if the Content is null 
+  //Needs another check if its rly a user afterwards
   if (test !== null) {
     let endItems = {} as Page<Playlist>;
     let playlists = await myapi.playlists.getUsersPlaylists(test);
@@ -44,6 +53,7 @@ export async function execute(interaction: CommandInteraction) {
     const defaultLimit = 20;
     let numbOfRequests = 0;
 
+    //Fetches all Playlists
     while (true) {
       if (endItems.items.length >= totalNumb) {
         break;
@@ -60,14 +70,34 @@ export async function execute(interaction: CommandInteraction) {
       });
     }
 
-    endItems.items.forEach((element) => {
-      reply += `${element.name}\r\n`;
+    //Filters so only 10 Playlists get shown.
+    let playsAfterSort: Playlist[];
+    if (endItems.items.length > 10) {
+      playsAfterSort = endItems.items.filter((y) => y.collaborative == false);
+      playsAfterSort = playsAfterSort.sort((x) => x.tracks.total).slice(0, 10);
+
+      comInfo.ReplyEmbed.setDescription(
+        "There are More Playlists then shown, maybe checkout their Profile at \n" +  `https://open.spotify.com/user/${test}` 
+      );
+    } else {
+      playsAfterSort = endItems.items;
+    }
+
+    //Iterates trough the array to create an Custom Field Array for the embed later.
+    let items: APIEmbedField[] = [];
+    let index: number= 0; 
+    playsAfterSort.forEach((element) => {
+      items.push({
+        name: `[${index}]  ${element.name}`,
+        value: `[${element.name}](${element.external_urls.spotify})`,
+        inline: true,
+      });
+      index ++; 
     });
+
+    //Sets the Fields of the Embed to the items.
+    comInfo.ReplyEmbed.setFields(items);
   }
 
-  // const embed = comInfo.ReplyEmbed.setFooter({
-  //   text: `Bot pinged by ${interaction.user.displayName}`,
-  //   iconURL: interaction.user.avatarURL()?.toString(),
-  // });
-  await interaction.editReply(reply);
+  await interaction.editReply({ content: "", embeds: [comInfo.ReplyEmbed] });
 }
